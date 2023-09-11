@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+
+import React, { useState, useRef } from "react";
 import {
   CountryDropdown,
   RegionDropdown,
@@ -57,7 +58,7 @@ export default function Form() {
           setPhoneNumbers([...phoneNumbers, sanitizedInput]);
           setInputValue("");
         } else {
-          alert("This phone number is already added.");
+          alert("This phone number is already `add`ed.");
         }
       }
     }
@@ -128,33 +129,28 @@ export default function Form() {
   };
 
   const postData = async (event) => {
-    event.preventDefault();
+    // event.preventDefault();
 
     const companyEmail = `${username}@company.com`;
 
     try {
-       await axios.post(
-        "http://localhost:8000/api/users/register",
-        {
-          username: username,
-          password: password,
-          about: about,
-          firstName: firstName,
-          lastName: lastName,
-          gender: gender,
-          email: email,
-          companyEmail: companyEmail,
-          phoneNumbers: phoneNumbers,
-          userData: userData,
-        }
-      );
+      await axios.post("http://localhost:8000/api/users/register", {
+        username: username,
+        password: password,
+        about: about,
+        firstName: firstName,
+        lastName: lastName,
+        gender: gender,
+        email: email,
+        companyEmail: companyEmail,
+        phoneNumbers: phoneNumbers,
+        userData: userData,
+      });
       console.log("done");
     } catch (error) {
       console.error(error);
     }
   };
-
-  ////////////////////////////////////////////////////////////////
 
   const [isValidZip, setIsValidZip] = useState(false);
 
@@ -174,25 +170,33 @@ export default function Form() {
     }
   };
 
-  useEffect(() => {
-    // Check if userData has changed
-    if (userData.length > 0) {
-      // Get the index of the last added unit
-      const lastIndex = userData.length - 1;
-      const lastUnit = userData[lastIndex];
+  if (userData.length > 0) {
+    // Get the index of the last added unit
+    const lastIndex = userData.length - 1;
+    const lastUnit = userData[lastIndex];
 
-      // Check the zip value and make the API call if it's not empty
-      if (lastUnit.zip) {
-        checkZipValidity(lastUnit.zip);
-      }
+    // Check the zip value and make the API call if it's not empty
+    if (lastUnit.zip) {
+      checkZipValidity(lastUnit.zip);
     }
-  }, [userData]);
+  }
+
+  const addPhoneNumber = () => {
+    setPhoneNumbers([...phoneNumbers, ""]);
+  };
+  const removePhoneNumber = (indexToRemove) => {
+    const newPhoneNumbers = phoneNumbers.filter(
+      (_, index) => index !== indexToRemove
+    );
+    setPhoneNumbers(newPhoneNumbers);
+  };
 
   return (
     <form className="space-y-8 divide-y divide-gray-200">
       <div className="space-y-8 divide-y divide-gray-200 sm:space-y-5">
         <div>
           <div className="mt-6 sm:mt-5 space-y-6 sm:space-y-5">
+            {/* Username */}
             <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
               <label
                 htmlFor="username"
@@ -216,6 +220,7 @@ export default function Form() {
               </div>
             </div>
 
+            {/* Email */}
             <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
               <label
                 htmlFor="email"
@@ -235,6 +240,7 @@ export default function Form() {
               </div>
             </div>
 
+            {/* Password */}
             <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
               <label
                 htmlFor="password"
@@ -283,6 +289,7 @@ export default function Form() {
               </div>
             </div>
 
+            {/* First Name */}
             <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
               <label
                 htmlFor="first-name"
@@ -302,6 +309,7 @@ export default function Form() {
               </div>
             </div>
 
+            {/* Last Name */}
             <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
               <label
                 htmlFor="last-name"
@@ -321,7 +329,7 @@ export default function Form() {
               </div>
             </div>
 
-            {/* Gender input field with immediate suggestions */}
+            {/* Gender */}
             <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
               <label
                 htmlFor="gender"
@@ -381,6 +389,7 @@ export default function Form() {
                     onBlur={() => setFocus(false)}
                   />
                 </div>
+
                 <div className="mt-2 sm:col-span-1">
                   <div>
                     {phoneNumbers.map((phoneNumber, index) => (
@@ -402,6 +411,7 @@ export default function Form() {
               </div>
             </div>
 
+            {/* About */}
             <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
               <label
                 htmlFor="about"
@@ -425,7 +435,7 @@ export default function Form() {
             </div>
           </div>
         </div>
-
+        {/* Personal Information */}
         <div className="pt-8 space-y-6 sm:pt-10 sm:space-y-5">
           <div>
             <h3 className="text-lg leading-6 font-medium text-gray-900">
@@ -522,11 +532,11 @@ export default function Form() {
                         id={`street-${index}`}
                         className="max-w-lg block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
                         value={data.street}
-                        onChange={(e) => {
+                        onChange={async (e) => {
                           const updatedUserData = [...userData];
                           updatedUserData[index].street = e.target.value;
                           setUserData(updatedUserData);
-                          checkZipValidity();
+                          await checkZipValidity(e.target.value); // Call the function here
                         }}
                       />
                     </div>
@@ -540,7 +550,7 @@ export default function Form() {
                       ZIP / Postal code
                     </label>
 
-                    <div >
+                    <div>
                       <div className="mt-1 sm:mt-0 sm:col-span-2 flex ">
                         <input
                           type="text"
@@ -556,9 +566,13 @@ export default function Form() {
                         />
 
                         {data.zip !== "" && (
-                         <p className={`mt-2 ml-3 ${isValidZip ? 'text-green-500' : 'text-red-500'}`}>
-                         {isValidZip ? "Valid Zip" : "Invalid Zip"}
-                       </p>
+                          <p
+                            className={`mt-2 ml-3 ${
+                              isValidZip ? "text-green-500" : "text-red-500"
+                            }`}
+                          >
+                            {isValidZip ? "Valid Zip" : "Invalid Zip"}
+                          </p>
                         )}
                       </div>
 
@@ -592,6 +606,7 @@ export default function Form() {
         </div>
       </div>
 
+      {/* Submit Buttons */}
       <div className="pt-5">
         <div className="flex justify-end mb-5">
           <button
@@ -602,9 +617,10 @@ export default function Form() {
           </button>
           <button
             type="submit"
-            className={`ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${!isValidZip ? 'cursor-not-allowed' : 'cursor-pointer'} `}
+            className={`ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+              !isValidZip ? "cursor-not-allowed" : "cursor-pointer"
+            } `}
             onClick={postData}
-
           >
             Save
           </button>
@@ -613,3 +629,4 @@ export default function Form() {
     </form>
   );
 }
+
